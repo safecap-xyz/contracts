@@ -39,7 +39,7 @@ async function main() {
   console.log("Creating a sample campaign...");
   // Parameters for a sample campaign
   const creator = deployer.address;
-  const goal = ethers.parseEther("10"); // 10 ETH goal
+  const goal = ethers.parseEther("0.1"); // 0.1 ETH goal (smaller for easier testing)
   const token = ethers.ZeroAddress; // Using ETH for this sample
   const campaignURI = "ipfs://QmSampleCID"; // Example IPFS URI for campaign metadata
   
@@ -56,6 +56,19 @@ async function main() {
     const campaignAddress = event.args[1]; // Second indexed parameter is the campaign address
     console.log("Sample campaign created at:", campaignAddress);
   }
+  
+  // Print a summary of all deployed contracts
+  console.log("\nDeployment Summary:");
+  console.log("---------------------");
+  console.log("CampaignNFT: ", nftAddress);
+  console.log("CampaignFactory: ", finalFactoryAddress);
+  console.log("Sample Campaign: ", event ? event.args[1] : "Failed to create");
+  console.log("\nNext Steps:");
+  console.log("1. Update FACTORY_ADDRESS, NFT_ADDRESS, and CAMPAIGN_ADDRESS in scripts/interact.js");
+  console.log("2. Run interaction script: npx hardhat run scripts/interact.js --network sepolia");
+  console.log("3. Verify contracts on Etherscan (optional):\n   npx hardhat verify --network sepolia " + finalFactoryAddress + " " + nftAddress + " " + deployer.address);
+  console.log("   npx hardhat verify --network sepolia " + nftAddress + " " + finalFactoryAddress + " \"ipfs://\" " + deployer.address);
+  console.log("\nSee DEPLOYMENT_GUIDE.md for more detailed instructions.");
   
   console.log("Deployment completed successfully!");
 }
