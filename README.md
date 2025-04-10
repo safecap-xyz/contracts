@@ -24,21 +24,70 @@ This project implements a complete smart contract architecture for a Web3 crowdf
 
 ## Development Setup
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v16 or higher)
+- [pnpm](https://pnpm.io/) (v8 or higher)
+
+### Installation
+
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
+# Compile smart contracts
+pnpm run compile
+
+# Run tests to verify setup
+pnpm test
+```
+
+### Environment Setup
+
+1. Copy the `.env.example` file to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+2. Edit the `.env` file with your own values:
+
+```
+# Network RPC URLs
+MAINNET_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/your-api-key
+SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/your-api-key
+BASE_TESTNET_RPC_URL=https://goerli.base.org
+
+# Private key (with or without 0x prefix - our code handles both formats)
+PRIVATE_KEY=your-private-key-here
+
+# API Keys for verification and services
+ETHERSCAN_API_KEY=your-etherscan-api-key
+ALCHEMY_API_KEY=your-alchemy-api-key
+```
+
+### Using Hardhat
+
+This project uses [Hardhat](https://hardhat.org/) for Ethereum development. Here are some common commands:
+
+```bash
 # Compile contracts
-npm run compile
+pnpm run compile
 
 # Run tests
-npm run test
+pnpm test
 
-# Start local blockchain node
-npm run node
+# Deploy contracts
+pnpm run deploy
 
-# Deploy to local network
-npm run deploy:local
+# Interact with deployed contracts
+pnpm run interact
+
+# Run a local Hardhat node
+npx hardhat node
+
+# Deploy to a local Hardhat node
+npx hardhat run --network localhost scripts/deploy.js
 ```
 
 ## Testing
@@ -78,3 +127,7 @@ I've implemented the Web3 crowdfunding smart contract architecture for your plat
     - Safe token transfer handling
 
 The deployment script correctly handles the interdependency between factory and NFT contracts, and comprehensive tests cover all core functionality. The architecture follows a modular design that allows for easy extension and maintenance.
+
+## Deployment Guide
+
+For detailed instructions on deploying the smart contracts, please refer to the DEPLOYMENT_GUIDE.md file.

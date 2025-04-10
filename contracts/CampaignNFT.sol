@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "./token/ERC721/ERC721.sol";
+import "./token/ERC721/extensions/ERC721URIStorage.sol";
+import "./utils/Ownable.sol";
+import "./utils/Counters.sol";
 import "./ICampaignFactory.sol";
 
 /**
@@ -32,17 +32,17 @@ contract CampaignNFT is ERC721, ERC721URIStorage, Ownable {
     /**
      * @notice Constructor
      * @param _factoryAddress Address of the campaign factory
-     * @param _baseURI Base URI for NFT metadata
+     * @param baseUri Base URI for NFT metadata
      * @param initialOwner Initial contract owner address
      */
     constructor(
         address _factoryAddress,
-        string memory _baseURI,
+        string memory baseUri,
         address initialOwner
     ) ERC721("CampaignDonationNFT", "CDNFT") Ownable(initialOwner) {
         require(_factoryAddress != address(0), "Invalid factory address");
         campaignFactoryAddress = _factoryAddress;
-        _baseTokenURI = _baseURI;
+        _baseTokenURI = baseUri;
     }
     
     /**
@@ -57,7 +57,7 @@ contract CampaignNFT is ERC721, ERC721URIStorage, Ownable {
     ) external returns (uint256) {
         // Only campaigns created by the factory can mint NFTs
         require(
-            ICampaignFactory(campaignFactoryAddress).isCampaign(msg.sender),
+            ICampaignFactory(campaignFactoryAddress).checkIsCampaign(msg.sender),
             "Caller is not a valid campaign"
         );
         

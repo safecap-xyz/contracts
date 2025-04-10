@@ -11,7 +11,7 @@ interface ICampaignFactory {
      * @param _addr The address to check
      * @return bool True if the address is a deployed campaign
      */
-    function isCampaign(address _addr) external view returns (bool);
+    function checkIsCampaign(address _addr) external view returns (bool);
 
     /**
      * @notice Creates a new campaign
