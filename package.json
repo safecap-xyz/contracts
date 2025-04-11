@@ -14,7 +14,8 @@
     "release:publish": "changeset publish",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.js",
-    "interact": "hardhat run scripts/interact.js"
+    "interact": "hardhat run scripts/interact.js",
+    "verify": "hardhat run scripts/verify.js --network sepolia"
   },
   "keywords": [],
   "author": "",

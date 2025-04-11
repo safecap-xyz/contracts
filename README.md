@@ -83,6 +83,9 @@ pnpm run deploy
 # Interact with deployed contracts
 pnpm run interact
 
+# Verify contracts on Etherscan (Sepolia)
+pnpm run verify
+
 # Run a local Hardhat node
 npx hardhat node
 
