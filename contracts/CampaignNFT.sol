@@ -18,7 +18,7 @@ contract CampaignNFT is ERC721, ERC721URIStorage, Ownable {
     Counters.Counter private _tokenIdCounter;
     
     // Address of the campaign factory to verify campaign addresses
-    address public immutable campaignFactoryAddress;
+    address public campaignFactoryAddress;
     
     // Mapping to track which campaign each NFT belongs to
     mapping(uint256 => address) public campaignForTokenId;
@@ -89,6 +89,15 @@ contract CampaignNFT is ERC721, ERC721URIStorage, Ownable {
     function setBaseURI(string memory newBaseURI) external onlyOwner {
         _baseTokenURI = newBaseURI;
     }
+    // Add this function to CampaignNFT.sol
+/**
+ * @notice Updates the campaign factory address
+ * @param _newFactoryAddress New address of the campaign factory
+ */
+function updateFactoryAddress(address _newFactoryAddress) external onlyOwner {
+    require(_newFactoryAddress != address(0), "Invalid factory address");
+    campaignFactoryAddress = _newFactoryAddress;
+}
     
     /**
      * @notice Returns the base URI for token metadata

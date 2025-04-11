@@ -14,7 +14,8 @@
     "release:publish": "changeset publish",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.js",
-    "interact": "hardhat run scripts/interact.js"
+    "interact": "hardhat run scripts/interact.js",
+    "verify": "hardhat run scripts/verify.js --network sepolia"
   },
   "keywords": [],
   "author": "",
@@ -37,7 +38,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "ethers": "^6.7.1",
     "globals": "^16.0.0",
-    "hardhat": "^2.22.1",
+    "hardhat": "^2.22.19",
     "hardhat-gas-reporter": "^1.0.8",
     "prettier": "^3.5.3",
     "solidity-coverage": "^0.8.0",

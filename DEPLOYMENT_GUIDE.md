@@ -61,10 +61,24 @@ Sample campaign created at: 0x...
 
 Verify your contracts on Etherscan for Sepolia:
 
+#### Using the verification script:
+
+```bash
+# Update the script with your contract addresses and constructor arguments
+# Edit the /scripts/verify.js file first, then run:
+npm run verify
+# or with pnpm
+pnpm run verify
+```
+
+#### Manual verification:
+
 ```bash
 npx hardhat verify --network sepolia <FACTORY_ADDRESS> <NFT_ADDRESS> <OWNER_ADDRESS>
 npx hardhat verify --network sepolia <NFT_ADDRESS> <FACTORY_ADDRESS> "ipfs://" <OWNER_ADDRESS>
 ```
+
+Make sure you have the `@nomicfoundation/hardhat-verify` plugin installed and configured in your hardhat.config.js file.
 
 ### 2. Interact with Deployed Contracts
 
