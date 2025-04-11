@@ -1,12 +1,9 @@
-// Optional: Add if you have hardhat-toolbox installed
-// require("@nomicfoundation/hardhat-toolbox");
-
 // Required plugins
 require("@nomicfoundation/hardhat-ethers");
+require("@nomicfoundation/hardhat-verify");
 require("hardhat-gas-reporter");
 require("dotenv").config();
 require("./tasks/balance");
-require("@nomicfoundation/hardhat-verify");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
