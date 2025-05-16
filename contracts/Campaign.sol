@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 // Define ReentrancyGuard contract directly
@@ -105,14 +104,15 @@ contract Campaign is ReentrancyGuard {
     receive() external payable {
         require(acceptedToken == address(0), "ETH not accepted, use token");
         require(msg.value > 0, "Donation amount must be greater than 0");
-        _processDonation(msg.value);
+        _processDonation(msg.value, "");
     }
     
     /**
      * @notice Donates to the campaign using the accepted ERC20 token
      * @param _amount Amount of tokens to donate
+     * @param _ipfsURI IPFS URI for the NFT metadata
      */
-    function donate(uint256 _amount) external nonReentrant {
+    function donate(uint256 _amount, string memory _ipfsURI) external nonReentrant {
         require(fundingActive, "Campaign is not active");
         require(_amount > 0, "Donation amount must be greater than 0");
         require(acceptedToken != address(0), "Use ETH transfer for donation");
@@ -120,19 +120,20 @@ contract Campaign is ReentrancyGuard {
         // Transfer tokens from sender to this contract
         IERC20(acceptedToken).safeTransferFrom(msg.sender, address(this), _amount);
         
-        _processDonation(_amount);
+        _processDonation(_amount, _ipfsURI);
     }
     
     /**
      * @notice Internal function to process donation logic
      * @param _amount Amount donated
+     * @param _ipfsURI IPFS URI for the NFT metadata
      */
-    function _processDonation(uint256 _amount) internal {
+    function _processDonation(uint256 _amount, string memory _ipfsURI) internal {
         // Update total raised
         totalRaised += _amount;
         
         // Mint an NFT to the donor
-        ICampaignNFT(nftContractAddress).mint(msg.sender, address(this));
+        ICampaignNFT(nftContractAddress).mint(msg.sender, address(this), _ipfsURI);
         
         emit DonationReceived(msg.sender, _amount, totalRaised);
     }

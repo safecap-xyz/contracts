@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import "./token/ERC721/ERC721.sol";
@@ -49,11 +48,13 @@ contract CampaignNFT is ERC721, ERC721URIStorage, Ownable {
      * @notice Mints a new NFT to a donor
      * @param _donor Address of the donor receiving the NFT
      * @param _campaignAddress Address of the campaign this donation is for
+     * @param _ipfsURI IPFS URI for the NFT metadata
      * @return uint256 The ID of the newly minted token
      */
     function mint(
         address _donor,
-        address _campaignAddress
+        address _campaignAddress,
+        string memory _ipfsURI
     ) external returns (uint256) {
         // Only campaigns created by the factory can mint NFTs
         require(
@@ -73,6 +74,9 @@ contract CampaignNFT is ERC721, ERC721URIStorage, Ownable {
         
         // Mint token to donor
         _safeMint(_donor, tokenId);
+        
+        // Set the token URI
+        _setTokenURI(tokenId, _ipfsURI);
         
         // Store which campaign this NFT belongs to
         campaignForTokenId[tokenId] = _campaignAddress;
