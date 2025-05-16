@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import "./utils/Ownable.sol";
@@ -25,7 +24,8 @@ contract CampaignFactory is ICampaignFactory, Ownable {
         address indexed campaignAddress,
         uint256 goal,
         address token,
-        string uri
+        string uri,
+        string imageURL
     );
     
     /**
@@ -49,13 +49,15 @@ contract CampaignFactory is ICampaignFactory, Ownable {
      * @param _goal The funding goal amount
      * @param _token The ERC20 token to accept (address(0) for ETH)
      * @param _uri The URI for campaign metadata
+     * @param _imageURL The URL for campaign image
      * @return address The address of the newly created campaign
      */
     function createCampaign(
         address _creator,
         uint256 _goal,
         address _token,
-        string memory _uri
+        string memory _uri,
+        string memory _imageURL
     ) external onlyOwner returns (address) {
         require(_creator != address(0), "Invalid creator address");
         
@@ -65,7 +67,8 @@ contract CampaignFactory is ICampaignFactory, Ownable {
             _goal,
             _token,
             nftContractAddress,
-            _uri
+            _uri,
+            _imageURL
         );
         
         address campaignAddress = address(newCampaign);
@@ -79,7 +82,8 @@ contract CampaignFactory is ICampaignFactory, Ownable {
             campaignAddress,
             _goal,
             _token,
-            _uri
+            _uri,
+            _imageURL
         );
         
         return campaignAddress;

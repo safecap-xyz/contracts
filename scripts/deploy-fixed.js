@@ -51,10 +51,11 @@ async function main() {
   const goal = ethers.parseEther("0.1"); // 0.1 ETH goal (smaller for easier testing)
   const token = ethers.ZeroAddress; // Using ETH for this sample
   const campaignURI = "ipfs://QmSampleCID"; // Example IPFS URI for campaign metadata
+  const imageURL = "https://example.com/sample-image.jpg"; // Example image URL
 
   // Create the campaign
   console.log("   Creating campaign...");
-  const tx = await finalFactory.createCampaign(creator, goal, token, campaignURI);
+  const tx = await finalFactory.createCampaign(creator, goal, token, campaignURI, imageURL);
   const receipt = await tx.wait();
 
   // Extract campaign address from events

@@ -65,6 +65,7 @@ contract Campaign is ReentrancyGuard {
     string public campaignURI;
     bool public fundingActive;
     bool public fundsClaimed;
+    string public imageURL;
     
     // Events
     event DonationReceived(address indexed donor, uint256 amount, uint256 newTotalRaised);
@@ -78,13 +79,15 @@ contract Campaign is ReentrancyGuard {
      * @param _token Address of ERC20 token, or address(0) for ETH
      * @param _nftContract Address of the NFT contract for donation NFTs
      * @param _uri URI pointing to campaign metadata (IPFS)
+     * @param _imageURL URL pointing to the campaign image
      */
     constructor(
         address _creator,
         uint256 _goal,
         address _token,
         address _nftContract,
-        string memory _uri
+        string memory _uri,
+        string memory _imageURL
     ) {
         require(_creator != address(0), "Invalid creator address");
         require(_goal > 0, "Goal must be greater than zero");
@@ -95,6 +98,7 @@ contract Campaign is ReentrancyGuard {
         acceptedToken = _token;
         nftContractAddress = _nftContract;
         campaignURI = _uri;
+        imageURL = _imageURL;
         fundingActive = true; // Campaign is active upon creation
     }
     
@@ -179,9 +183,11 @@ contract Campaign is ReentrancyGuard {
     /**
      * @notice Updates the campaign metadata URI - can only be called by creator
      * @param _newURI New metadata URI
+     * @param _newImageURL New image URL
      */
-    function updateCampaignURI(string memory _newURI) external {
+    function updateCampaignURI(string memory _newURI, string memory _newImageURL) external {
         require(msg.sender == creator, "Only creator can update URI");
         campaignURI = _newURI;
+        imageURL = _newImageURL;
     }
 }
