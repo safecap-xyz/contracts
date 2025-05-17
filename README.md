@@ -1,4 +1,4 @@
-# Web3 Crowdfunding Platform
+# SafeCap - Web3 Crowdfunding Platform
 
 A decentralized crowdfunding platform with NFT rewards for donors.
 
