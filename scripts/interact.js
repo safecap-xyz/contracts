@@ -46,7 +46,8 @@ async function main() {
       signer.address, // Using the signer as the creator
       ethers.parseEther("0.1"), // 0.1 ETH goal
       ethers.ZeroAddress, // Using ETH
-      "ipfs://QmSampleCampaignMetadata"
+      "ipfs://QmSampleCampaignMetadata",
+      "https://example.com/sample-image.jpg" // Example image URL
     );
     
     console.log("Transaction hash:", tx.hash);
@@ -71,6 +72,7 @@ async function main() {
   const totalRaised = await campaign.totalRaised();
   const isActive = await campaign.fundingActive();
   const isClaimed = await campaign.fundsClaimed();
+  const imageURL = await campaign.imageURL();
   
   console.log("Campaign Info:");
   console.log("- Creator:", creator);
@@ -78,6 +80,7 @@ async function main() {
   console.log("- Total raised:", ethers.formatEther(totalRaised), "ETH");
   console.log("- Active:", isActive);
   console.log("- Funds claimed:", isClaimed);
+  console.log("- Image URL:", imageURL);
   
   // Make a donation if active
   if (isActive && !isClaimed) {

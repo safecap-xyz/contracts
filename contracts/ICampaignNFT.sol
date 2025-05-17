@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 /**
@@ -10,9 +9,10 @@ interface ICampaignNFT {
      * @notice Mints a new NFT to the donor, representing their donation to a campaign
      * @param _donor Address of the donor receiving the NFT
      * @param _campaignAddress Address of the campaign that received the donation
+     * @param _ipfsURI IPFS URI for the NFT metadata
      * @return uint256 The token ID of the newly minted NFT
      */
-    function mint(address _donor, address _campaignAddress) external returns (uint256);
+    function mint(address _donor, address _campaignAddress, string memory _ipfsURI) external returns (uint256);
     
     /**
      * @notice Gets the campaign address associated with a specific token ID

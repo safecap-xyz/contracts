@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 // Define ReentrancyGuard contract directly
@@ -66,6 +65,7 @@ contract Campaign is ReentrancyGuard {
     string public campaignURI;
     bool public fundingActive;
     bool public fundsClaimed;
+    string public imageURL;
     
     // Events
     event DonationReceived(address indexed donor, uint256 amount, uint256 newTotalRaised);
@@ -79,13 +79,15 @@ contract Campaign is ReentrancyGuard {
      * @param _token Address of ERC20 token, or address(0) for ETH
      * @param _nftContract Address of the NFT contract for donation NFTs
      * @param _uri URI pointing to campaign metadata (IPFS)
+     * @param _imageURL URL pointing to the campaign image
      */
     constructor(
         address _creator,
         uint256 _goal,
         address _token,
         address _nftContract,
-        string memory _uri
+        string memory _uri,
+        string memory _imageURL
     ) {
         require(_creator != address(0), "Invalid creator address");
         require(_goal > 0, "Goal must be greater than zero");
@@ -96,6 +98,7 @@ contract Campaign is ReentrancyGuard {
         acceptedToken = _token;
         nftContractAddress = _nftContract;
         campaignURI = _uri;
+        imageURL = _imageURL;
         fundingActive = true; // Campaign is active upon creation
     }
     
@@ -105,14 +108,15 @@ contract Campaign is ReentrancyGuard {
     receive() external payable {
         require(acceptedToken == address(0), "ETH not accepted, use token");
         require(msg.value > 0, "Donation amount must be greater than 0");
-        _processDonation(msg.value);
+        _processDonation(msg.value, "");
     }
     
     /**
      * @notice Donates to the campaign using the accepted ERC20 token
      * @param _amount Amount of tokens to donate
+     * @param _ipfsURI IPFS URI for the NFT metadata
      */
-    function donate(uint256 _amount) external nonReentrant {
+    function donate(uint256 _amount, string memory _ipfsURI) external nonReentrant {
         require(fundingActive, "Campaign is not active");
         require(_amount > 0, "Donation amount must be greater than 0");
         require(acceptedToken != address(0), "Use ETH transfer for donation");
@@ -120,19 +124,20 @@ contract Campaign is ReentrancyGuard {
         // Transfer tokens from sender to this contract
         IERC20(acceptedToken).safeTransferFrom(msg.sender, address(this), _amount);
         
-        _processDonation(_amount);
+        _processDonation(_amount, _ipfsURI);
     }
     
     /**
      * @notice Internal function to process donation logic
      * @param _amount Amount donated
+     * @param _ipfsURI IPFS URI for the NFT metadata
      */
-    function _processDonation(uint256 _amount) internal {
+    function _processDonation(uint256 _amount, string memory _ipfsURI) internal {
         // Update total raised
         totalRaised += _amount;
         
         // Mint an NFT to the donor
-        ICampaignNFT(nftContractAddress).mint(msg.sender, address(this));
+        ICampaignNFT(nftContractAddress).mint(msg.sender, address(this), _ipfsURI);
         
         emit DonationReceived(msg.sender, _amount, totalRaised);
     }
@@ -178,9 +183,11 @@ contract Campaign is ReentrancyGuard {
     /**
      * @notice Updates the campaign metadata URI - can only be called by creator
      * @param _newURI New metadata URI
+     * @param _newImageURL New image URL
      */
-    function updateCampaignURI(string memory _newURI) external {
+    function updateCampaignURI(string memory _newURI, string memory _newImageURL) external {
         require(msg.sender == creator, "Only creator can update URI");
         campaignURI = _newURI;
+        imageURL = _newImageURL;
     }
 }
