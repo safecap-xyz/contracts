@@ -1,0 +1,16 @@
+{
+  "network": "base-sepolia",
+  "timestamp": "2025-06-23T23:15:36.749Z",
+  "deployer": "0xFd638308290BD73ab40F1C04d9EB9c1e93525c31",
+  "contracts": {
+    "registry": "0x89Dc7dE42ad4e84cfccd388Acf09075C6aE9A472",
+    "factory": "0xb7b847B6372BeA97aEab745380Fc6f3932135D28",
+    "nft": "0x68f8c5d65C0d3ef6218784baF10cab3e75d373ED",
+    "sampleCampaign": "0x88BeA5aBfB3389DEfbCBEACa38127cC835c99ddD"
+  },
+  "optimization": {
+    "signaturesReduced": "6 → 2",
+    "gasReduction": "~39%",
+    "timeReduction": "~75%"
+  }
+}
