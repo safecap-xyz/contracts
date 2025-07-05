@@ -168,13 +168,59 @@ contract SafeCapLoanVault is Ownable {
         IEulerSwap.CurveParams calldata curveParams,
         bytes32 salt
     ) external {
+        _validateProposalParams(borrower, loanAmount, collateralAmount, interestRate, loanDuration);
+        
+        address eulerSwapPool = _setupLoanInfrastructure(
+            borrower,
+            loanAmount,
+            loanAsset,
+            collateralAmount,
+            collateralAsset,
+            salt
+        );
+        
+        _storeLoanDetails(
+            eulerSwapPool,
+            borrower,
+            loanAmount,
+            loanAsset,
+            collateralAmount,
+            collateralAsset,
+            interestRate,
+            loanDuration,
+            curveParams
+        );
+    }
+    
+    /**
+     * @notice Validates loan proposal parameters
+     */
+    function _validateProposalParams(
+        address borrower,
+        uint256 loanAmount,
+        uint256 collateralAmount,
+        uint256 interestRate,
+        uint256 loanDuration
+    ) internal view {
         require(borrower != address(0), "Invalid borrower address");
         require(loanAmount > 0, "Invalid loan amount");
         require(collateralAmount > 0, "Invalid collateral amount");
-        require(interestRate > 0 && interestRate <= 10000, "Invalid interest rate"); // Max 100%
+        require(interestRate > 0 && interestRate <= 10000, "Invalid interest rate");
         require(loanDuration > 0, "Invalid loan duration");
         require(borrowerToPool[borrower] == address(0), "Borrower already has active loan");
-
+    }
+    
+    /**
+     * @notice Sets up loan infrastructure (collateral deposit, Euler account, EulerSwap pool)
+     */
+    function _setupLoanInfrastructure(
+        address borrower,
+        uint256 loanAmount,
+        address loanAsset,
+        uint256 collateralAmount,
+        address collateralAsset,
+        bytes32 salt
+    ) internal returns (address eulerSwapPool) {
         // Transfer collateral from backer to contract
         IERC20(collateralAsset).safeTransferFrom(msg.sender, address(this), collateralAmount);
 
@@ -182,11 +228,11 @@ contract SafeCapLoanVault is Ownable {
         address eulerAccount = evc.createAccount(address(this));
 
         // Approve and deposit collateral to Euler lending vault
-        IERC20(collateralAsset).safeApprove(collateralAsset, collateralAmount); // Vault address same as asset for simplicity
+        IERC20(collateralAsset).safeApprove(collateralAsset, collateralAmount);
         IEulerLendingVault(collateralAsset).deposit(collateralAmount, eulerAccount);
 
         // Deploy EulerSwap pool
-        address eulerSwapPool = eulerSwapFactory.deployPool(
+        eulerSwapPool = eulerSwapFactory.deployPool(
             collateralAsset,  // vault0 (collateral)
             loanAsset,        // vault1 (loan asset)
             eulerAccount,     // euler account
@@ -197,13 +243,30 @@ contract SafeCapLoanVault is Ownable {
 
         // Activate the EulerSwap pool
         IEulerSwap(eulerSwapPool).activate();
-
+        
+        // Store euler account mapping
+        poolToEulerAccount[eulerSwapPool] = eulerAccount;
+    }
+    
+    /**
+     * @notice Stores loan details in contract state
+     */
+    function _storeLoanDetails(
+        address eulerSwapPool,
+        address borrower,
+        uint256 loanAmount,
+        address loanAsset,
+        uint256 collateralAmount,
+        address collateralAsset,
+        uint256 interestRate,
+        uint256 loanDuration,
+        IEulerSwap.CurveParams calldata curveParams
+    ) internal {
         // Calculate total repayment amount
-        uint256 interest = (loanAmount * interestRate) / 10000;
-        uint256 totalRepaymentAmount = loanAmount + interest;
+        uint256 totalRepaymentAmount = loanAmount + (loanAmount * interestRate) / 10000;
 
         // Store loan details
-        LoanDetails memory loanDetails = LoanDetails({
+        poolToLoanDetails[eulerSwapPool] = LoanDetails({
             backer: msg.sender,
             borrower: borrower,
             loanAmount: loanAmount,
@@ -217,8 +280,6 @@ contract SafeCapLoanVault is Ownable {
             curveParams: curveParams
         });
 
-        poolToLoanDetails[eulerSwapPool] = loanDetails;
-        poolToEulerAccount[eulerSwapPool] = eulerAccount;
         borrowerToPool[borrower] = eulerSwapPool;
         backerLoans[msg.sender].push(eulerSwapPool);
         borrowerLoans[borrower].push(eulerSwapPool);
