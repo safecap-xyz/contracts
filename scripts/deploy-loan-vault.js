@@ -7,9 +7,9 @@ async function main() {
   const [deployer] = await hre.ethers.getSigners();
   console.log("📝 Deploying with account:", deployer.address);
   
-  // Mock addresses for Base Sepolia (replace with actual when available)
-  const EULER_SWAP_FACTORY = "0x1234567890123456789012345678901234567890"; // Placeholder
-  const EVC_ADDRESS = "0x1234567890123456789012345678901234567891"; // Placeholder
+  // Mainnet Euler addresses
+  const EULER_SWAP_FACTORY = "0xf0CFe22d23699ff1B2CFe6B8f706A6DB63911262";
+  const EVC_ADDRESS = "0x5301c7dD20bD945D2013b48ed0DEE3A284ca8989";
   const FEE_RECIPIENT = deployer.address; // Use deployer address to avoid checksum issues
   
   // Check balance (updated for ethers v6)
