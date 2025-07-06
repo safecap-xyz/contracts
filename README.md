@@ -205,7 +205,7 @@ CRED_PROTOCOL_KEY=your-cred-key
 
 ### **Official Contract Addresses**
 
-- **SafeCapLoanVault (Base Mainnet):** `0x8EB4A4e98D3CEC887bdfD6FDF6b002a12375b8B2`
+- **SafeCapLoanVault (Base Mainnet):** `0x207eee1FCBF91c194AB8b9dB1EBEeEE45cE3373c`
 
 ### **SafeCap-Euler Deployment (Production Ready)**
 
