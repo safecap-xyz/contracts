@@ -3,14 +3,14 @@ const hre = require("hardhat");
 async function main() {
   console.log("🚀 Deploying SafeCapLoanVault...");
 
-  // Mock addresses for Base Sepolia (replace with actual when available)
-  const EULER_SWAP_FACTORY = hre.ethers.getAddress("0x1234567890123456789012345678901234567890"); // Placeholder
-  const EVC_ADDRESS = hre.ethers.getAddress("0x1234567890123456789012345678901234567891"); // Placeholder
-  const FEE_RECIPIENT = hre.ethers.getAddress("0x742d35Cc6676C4C8D5f8e8E4f4F7AF6B5E0b5F8D"); // Your address with proper checksum
-  
   // Get deployer
   const [deployer] = await hre.ethers.getSigners();
   console.log("📝 Deploying with account:", deployer.address);
+  
+  // Mock addresses for Base Sepolia (replace with actual when available)
+  const EULER_SWAP_FACTORY = "0x1234567890123456789012345678901234567890"; // Placeholder
+  const EVC_ADDRESS = "0x1234567890123456789012345678901234567891"; // Placeholder
+  const FEE_RECIPIENT = deployer.address; // Use deployer address to avoid checksum issues
   
   // Check balance (updated for ethers v6)
   const balance = await hre.ethers.provider.getBalance(deployer.address);
