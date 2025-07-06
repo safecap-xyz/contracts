@@ -93,6 +93,7 @@ contract SafeCapLoanVault is Ownable {
     mapping(address => LoanDetails) public poolToLoanDetails;   // eulerSwapPool => LoanDetails
     mapping(address => address[]) public backerLoans;           // backer => array of pools
     mapping(address => address[]) public borrowerLoans;         // borrower => array of pools
+    mapping(address => address) public tokenToEulerVault;       // token => Euler lending vault
 
     // Protocol fee (in basis points, e.g., 100 = 1%)
     uint256 public protocolFeeBps = 100;
@@ -153,6 +154,13 @@ contract SafeCapLoanVault is Ownable {
         eulerSwapFactory = IEulerSwapFactory(_eulerSwapFactory);
         evc = IEVC(_evc);
         feeRecipient = _feeRecipient;
+        
+        // Initialize known token -> vault mappings for Base mainnet
+        // WETH -> Euler WETH vault (confirmed via Superform)
+        tokenToEulerVault[0x4200000000000000000000000000000000000006] = 0x859160DB5841E5cfB8D3f144C6b3381A85A4b410;
+        
+        // TODO: Add USDC vault mapping once address is confirmed
+        // USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913) -> Euler USDC vault (TBD)
     }
 
     /**
