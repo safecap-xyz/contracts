@@ -1,7 +1,7 @@
 {
   "network": "base",
-  "contractAddress": "0x4D5925e35D34243A310cA0644425D13934A3c6Bc",
+  "contractAddress": "0xf33031d67Ae101337189923aa5917C232a904FE5",
   "deployer": "0xD0e2aB41d72f1E4871F480578367900fF3b327Ca",
-  "timestamp": "2025-07-06T22:37:15.544Z",
-  "transactionHash": "0xf22743217ba464eef1a5d504fee0eff2380a6b7fc64fbfbe57443608d8174b94"
+  "timestamp": "2025-07-07T02:22:34.684Z",
+  "transactionHash": "0x67b64be1e8eb75102716fb72922499199c50a9918df54820f058369d6abdfb35"
 }

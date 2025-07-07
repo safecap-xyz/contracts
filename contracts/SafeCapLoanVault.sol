@@ -93,7 +93,7 @@ contract SafeCapLoanVault is Ownable {
     mapping(address => LoanDetails) public poolToLoanDetails;   // eulerSwapPool => LoanDetails
     mapping(address => address[]) public backerLoans;           // backer => array of pools
     mapping(address => address[]) public borrowerLoans;         // borrower => array of pools
-    mapping(address => address) public tokenToEulerVault;       // token => Euler lending vault
+    mapping(address => address) public tokenToEulerAsset;       // token => Euler asset
 
     // Protocol fee (in basis points, e.g., 100 = 1%)
     uint256 public protocolFeeBps = 100;
@@ -155,12 +155,23 @@ contract SafeCapLoanVault is Ownable {
         evc = IEVC(_evc);
         feeRecipient = _feeRecipient;
         
-        // Initialize known token -> vault mappings for Base mainnet
-        // WETH -> Euler WETH vault (confirmed via Superform)
-        tokenToEulerVault[0x4200000000000000000000000000000000000006] = 0x859160DB5841E5cfB8D3f144C6b3381A85A4b410;
+        // Initialize known token -> asset mappings for Base mainnet
+        // WETH -> Euler WETH asset (confirmed via Superform)
+        tokenToEulerAsset[0x4200000000000000000000000000000000000006] = 0x859160DB5841E5cfB8D3f144C6b3381A85A4b410;
         
-        // TODO: Add USDC vault mapping once address is confirmed
-        // USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913) -> Euler USDC vault (TBD)
+        // TODO: Add USDC asset mapping once address is confirmed
+        // USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913) -> Euler USDC asset (TBD)
+    }
+
+    /**
+     * @notice Set token to Euler vault mapping (only owner)
+     * @param token The underlying token address
+     * @param vault The corresponding Euler lending vault address
+     */
+    function setTokenToVaultMapping(address token, address vault) external onlyOwner {
+        require(token != address(0), "Invalid token address");
+        require(vault != address(0), "Invalid vault address");
+        tokenToEulerAsset[token] = vault;
     }
 
     /**
@@ -250,21 +261,44 @@ contract SafeCapLoanVault is Ownable {
         // Transfer collateral from backer to this contract
         IERC20(collateralAsset).safeTransferFrom(msg.sender, address(this), collateralAmount);
 
-        // Approve collateral for the collateral vault
-        IERC20(collateralAsset).safeApprove(collateralAsset, collateralAmount);
+        // Get the Euler vault for this collateral asset
+        address collateralVault = tokenToEulerAsset[collateralAsset];
+        require(collateralVault != address(0), "No Euler vault configured for collateral token");
         
         // The backer should have already:
         // 1. Created their EVC account via EVC.createAccount(msg.sender)
         // 2. Enabled the collateral vault
         // 3. Enabled this contract as controller for their account
         
-        // Deposit collateral to Euler lending vault on behalf of backer's account
-        IEulerLendingVault(collateralAsset).deposit(collateralAmount, backerEulerAccount);
+        // Prepare batch operations for EVC
+        IEVC.BatchItem[] memory items = new IEVC.BatchItem[](2);
+        
+        // First: Approve collateral to the vault (not EVC)
+        items[0] = IEVC.BatchItem({
+            targetContract: collateralAsset,
+            onBehalfOfAccount: address(this),
+            value: 0,
+            data: abi.encodeWithSelector(IERC20.approve.selector, collateralVault, collateralAmount)
+        });
+        
+        // Second: Deposit collateral to Euler lending vault
+        items[1] = IEVC.BatchItem({
+            targetContract: collateralVault,
+            onBehalfOfAccount: address(this),
+            value: 0,
+            data: abi.encodeWithSelector(IEulerLendingVault.deposit.selector, collateralAmount, backerEulerAccount)
+        });
+        
+        // Execute batch through EVC
+        evc.batch(items);
 
-        // Deploy EulerSwap pool
+        // Deploy EulerSwap pool using vault addresses
+        address loanVault = tokenToEulerAsset[loanAsset];
+        require(loanVault != address(0), "No Euler vault configured for loan token");
+        
         eulerSwapPool = eulerSwapFactory.deployPool(
-            collateralAsset,  // vault0 (collateral)
-            loanAsset,        // vault1 (loan asset)
+            collateralVault,  // vault0 (collateral vault)
+            loanVault,        // vault1 (loan asset vault)
             backerEulerAccount, // euler account
             collateralAmount, // reserveX
             loanAmount,       // reserveY
@@ -364,8 +398,10 @@ contract SafeCapLoanVault is Ownable {
         IERC20(loanDetails.loanAsset).safeTransferFrom(msg.sender, address(this), amount);
         
         // Repay the Euler loan
-        IERC20(loanDetails.loanAsset).safeApprove(loanDetails.loanAsset, loanDetails.loanAmount);
-        IEulerLendingVault(loanDetails.loanAsset).repay(loanDetails.loanAmount, loanDetails.backerEulerAccount);
+        address loanVault = tokenToEulerAsset[loanDetails.loanAsset];
+        require(loanVault != address(0), "No Euler vault configured for loan token");
+        IERC20(loanDetails.loanAsset).safeApprove(loanVault, loanDetails.loanAmount);
+        IEulerLendingVault(loanVault).repay(loanDetails.loanAmount, loanDetails.backerEulerAccount);
         
         // Calculate protocol fee and backer reward
         uint256 interest = amount - loanDetails.loanAmount;
