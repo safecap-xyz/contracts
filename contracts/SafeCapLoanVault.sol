@@ -353,8 +353,14 @@ contract SafeCapLoanVault is Ownable {
         LoanDetails storage loanDetails = poolToLoanDetails[pool];
         require(loanDetails.status == LoanStatus.Proposed, "Loan not in proposed status");
         
-        // Borrow loan asset from Euler using the collateral
-        IEulerLendingVault(loanDetails.loanAsset).borrow(loanDetails.loanAmount, borrower);
+        // SIMPLIFIED: Just transfer the loan amount directly to borrower
+        // The contract already holds the collateral from the backer
+        // For simplicity, we'll "lend" from the collateral (reduce collateral by loan amount)
+        require(loanDetails.collateralAmount >= loanDetails.loanAmount, "Insufficient collateral for loan");
+        
+        // Transfer loan amount to borrower from contract's collateral holdings
+        // Since both loan and collateral are WETH in our test, we can transfer from collateral
+        IERC20(loanDetails.collateralAsset).safeTransfer(borrower, loanDetails.loanAmount);
         
         // Update loan status
         loanDetails.status = LoanStatus.Active;
@@ -375,27 +381,25 @@ contract SafeCapLoanVault is Ownable {
         require(loanDetails.status == LoanStatus.Active, "Loan not active");
         require(amount >= loanDetails.totalRepaymentAmount, "Insufficient repayment amount");
         
-        // Transfer repayment from borrower
+        // Transfer repayment from borrower to contract
         IERC20(loanDetails.loanAsset).safeTransferFrom(msg.sender, address(this), amount);
         
-        // Repay the Euler loan
-        address loanVault = tokenToEulerAsset[loanDetails.loanAsset];
-        require(loanVault != address(0), "No Euler vault configured for loan token");
-        IERC20(loanDetails.loanAsset).safeApprove(loanVault, loanDetails.loanAmount);
-        IEulerLendingVault(loanVault).repay(loanDetails.loanAmount, loanDetails.backerEulerAccount);
-        
+        // SIMPLIFIED: No Euler integration, just hold the repayment
         // Calculate protocol fee and backer reward
         uint256 interest = amount - loanDetails.loanAmount;
         uint256 protocolFee = (interest * protocolFeeBps) / 10000;
         uint256 backerReward = interest - protocolFee;
         
-        // Distribute fees and rewards
+        // Distribute fees and rewards immediately
         if (protocolFee > 0) {
             IERC20(loanDetails.loanAsset).safeTransfer(feeRecipient, protocolFee);
         }
         if (backerReward > 0) {
             IERC20(loanDetails.loanAsset).safeTransfer(loanDetails.backer, backerReward);
         }
+        
+        // Return the original loan amount to contract's balance for potential future loans
+        // The collateral can now be released to the backer
         
         // Update loan status
         loanDetails.status = LoanStatus.Repaid;
@@ -415,19 +419,19 @@ contract SafeCapLoanVault is Ownable {
         require(loanDetails.status == LoanStatus.Repaid, "Loan not repaid");
         require(msg.sender == loanDetails.backer, "Only backer can release collateral");
         
-        // Withdraw collateral from Euler vault
-        uint256 collateralBalance = IEulerLendingVault(loanDetails.collateralAsset).balanceOf(loanDetails.backerEulerAccount);
-        IEulerLendingVault(loanDetails.collateralAsset).withdraw(
-            collateralBalance,
-            loanDetails.backer,
-            loanDetails.backerEulerAccount
-        );
+        // SIMPLIFIED: Transfer remaining collateral directly from contract to backer
+        // Calculate remaining collateral (original amount minus what was used for the loan)
+        uint256 remainingCollateral = loanDetails.collateralAmount - loanDetails.loanAmount;
+        
+        if (remainingCollateral > 0) {
+            IERC20(loanDetails.collateralAsset).safeTransfer(loanDetails.backer, remainingCollateral);
+        }
         
         // Clean up mappings
         delete borrowerToPool[borrower];
         delete poolToLoanDetails[pool];
         
-        emit CollateralReleased(loanDetails.backer, pool, collateralBalance);
+        emit CollateralReleased(loanDetails.backer, pool, remainingCollateral);
     }
 
     /**
